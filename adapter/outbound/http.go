@@ -22,6 +22,7 @@ type Http struct {
 	user      string
 	pass      string
 	tlsConfig *tls.Config
+	userAgent string
 }
 
 type HttpOption struct {
@@ -34,6 +35,7 @@ type HttpOption struct {
 	TLS            bool   `proxy:"tls,omitempty"`
 	SNI            string `proxy:"sni,omitempty"`
 	SkipCertVerify bool   `proxy:"skip-cert-verify,omitempty"`
+	UserAgent      string `proxy:"user-agent,omitempty"`
 }
 
 // StreamConn implements C.ProxyAdapter
@@ -88,6 +90,7 @@ func (h *Http) shakeHand(metadata *C.Metadata, rw io.ReadWriter) error {
 		auth := h.user + ":" + h.pass
 		req.Header.Add("Proxy-Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(auth)))
 	}
+	req.Header.Add("User-Agent", h.userAgent)
 
 	if err := req.Write(rw); err != nil {
 		return err
@@ -141,5 +144,6 @@ func NewHttp(option HttpOption) *Http {
 		user:      option.UserName,
 		pass:      option.Password,
 		tlsConfig: tlsConfig,
+		userAgent: option.UserAgent,
 	}
 }
